@@ -1,0 +1,44 @@
+# Additional service to add to your main docker-compose.yml
+# Copy this content into your main docker-compose.yml file
+
+  # Python RAG Processing Service
+  python-rag:
+    build: ./python_rag
+    container_name: hcm202-python-rag
+    environment:
+      # Database configuration (same as backend)
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_NAME=hcm202_db
+      - DB_USER=hcm202_user
+      - DB_PASSWORD=hcm202_password
+      - DB_SSL=false
+      
+      # OpenAI configuration (from your .env)
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - OPENAI_BASE_URL=${OPENAI_BASE_URL:-https://api.openai.com/v1}
+      - OPENAI_EMBEDDING_MODEL=${OPENAI_EMBEDDING_MODEL:-text-embedding-ada-002}
+      - OPENAI_MODEL=${OPENAI_MODEL:-gpt-4}
+      
+      # RAG configuration
+      - CHUNK_SIZE=${CHUNK_SIZE:-1000}
+      - CHUNK_OVERLAP=${CHUNK_OVERLAP:-200}
+      - TOP_K_RESULTS=${TOP_K_RESULTS:-5}
+      - SIMILARITY_THRESHOLD=${SIMILARITY_THRESHOLD:-0.7}
+    
+    volumes:
+      # Mount uploads directory to access PDF files
+      - ./uploads:/app/uploads:ro
+      # Mount python_rag directory for development
+      - ./python_rag:/app:rw
+    
+    depends_on:
+      postgres:
+        condition: service_healthy
+    
+    networks:
+      - hcm202-network
+    
+    # Don't start automatically, run on demand
+    profiles:
+      - tools

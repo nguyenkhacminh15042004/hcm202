@@ -1,0 +1,74 @@
+# --- OS/Editor ---
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+.vscode/
+.idea/
+*.log
+logs/
+
+# --- Node ---
+node_modules/
+**/node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# --- Python ---
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.egg-info/
+.eggs/
+.venv/
+venv/
+ENV/
+
+# --- Env & Secrets ---
+.env
+.env.*
+!.env.example
+*.env.local
+*.secret
+*.key
+*.pem
+*.crt
+.secret*
+secrets*/
+
+# --- Docker ---
+**/.docker/
+**/docker-compose.override.yml
+
+# --- Build/Dist ---
+dist/
+build/
+coverage/
+.nyc_output/
+.tmp/
+.tmp*/
+tmp/
+
+# --- App data ---
+backend/uploads/
+backend/public/
+!backend/public/.gitkeep
+!backend/uploads/.gitkeep
+backend/python_rag/uploads/
+
+# --- Cache ---
+.cache/
+.next/
+.nuxt/
+.svelte-kit/
+
+# --- Large/binary ---
+*.tar
+*.zip
+*.rar
+*.7z
+*.pdf
+*.xlsx

@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HCM202 | Không gian Học tập số</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Merriweather:wght@400;700&display=swap" rel="stylesheet">
+    
+    <!-- Feather Icons -->
+    <script src="https://unpkg.com/feather-icons"></script>
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="style.css">
+    
+    <!-- React and Babel for JSX -->
+    <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <!-- Application Configuration -->
+    <script src="config.js"></script>
+    <script src="api.js"></script>
+</head>
+<body>
+
+    <!-- ============== TRANG MỞ ĐẦU ============== -->
+    <main id="landing-page">
+        <div class="hero-content">
+            <h1 class="logo">HCM202</h1>
+            <h2 class="headline">Nền tảng Hỏi-Đáp Tương tác về Tư tưởng Hồ Chí Minh</h2>
+            <p class="description">
+                Khám phá di sản tri thức của Chủ tịch Hồ Chí Minh một cách trực quan, sâu sắc và có dẫn chứng. Được xây dựng dựa trên giáo trình chính thống của Bộ Giáo dục và Đào tạo.
+            </p>
+            <button id="start-btn" class="cta-button">Bắt đầu Hành trình Tri thức</button>
+            <a href="GiaoTrinhTuTuongHCM.pdf" target="_blank" class="secondary-link">Xem Nguồn học liệu chính thống</a>
+        </div>
+    </main>
+
+    <!-- ============== GIAO DIỆN ỨNG DỤNG (Mặc định ẩn) ============== -->
+    <div class="app-container hidden" id="app-container" style="display:flex;">
+        <!-- ============== THANH ĐIỀU HƯỚNG CHÍNH ============== -->
+        <nav class="main-nav">
+            <div class="nav-logo">
+                <img src="https://img.icons8.com/plasticine/100/lotus.png" alt="Logo Hoa Sen">
+            </div>
+            
+            <ul>
+                <li class="nav-item active" data-page="chat-interface">
+                    <i data-feather="message-circle"></i>
+                    <span class="tooltip">Hỏi-Đáp</span>
+                </li>
+                <li class="nav-item" data-page="quiz-page">
+                    <i data-feather="check-square"></i>
+                    <span class="tooltip">Trắc nghiệm</span>
+                </li>
+                <li class="nav-item" data-page="mindmap-page">
+                    <i data-feather="git-branch"></i>
+                    <span class="tooltip">Sơ đồ tư duy</span>
+                </li>
+                <li class="nav-item" data-page="settings-page">
+                    <i data-feather="settings"></i>
+                    <span class="tooltip">Cài đặt</span>
+                </li>
+            </ul>
+        </nav>
+
+        <!-- ============== KHUNG NỘI DUNG CHÍNH ============== -->
+        <main class="content-wrapper">
+            <!-- ============== GIAO DIỆN CHAT (Mặc định hiển thị) ============== -->
+            <div id="chat-interface" class="page active">
+                 <div class="chat-container">
+                    <aside class="sidebar">
+                        <h3>Công cụ Học tập</h3>
+                        <div class="quote-of-the-day">
+                            <h4>Trích dẫn của ngày</h4>
+                            <p>"Non sông Việt Nam có trở nên tươi đẹp hay không... chính là nhờ một phần lớn ở công học tập của các em."</p>
+                            <span>- Thư gửi các em học sinh (1945)</span>
+                        </div>
+
+                        <div class="quick-suggestions">
+                            <h4>Gợi ý hỏi nhanh</h4>
+                            <ul>
+                                <li class="loading-suggestion">Đang tải gợi ý...</li>
+                            </ul>
+                        </div>
+                    </aside>
+                    <section class="chat-window">
+                        <header class="chat-header">
+                            <button id="sidebar-toggle" class="sidebar-toggle" aria-label="Mở bảng bên">
+                                <i data-feather="sidebar"></i>
+                            </button>
+                            <h4>HCM202 Assistant</h4>
+                        </header>
+                        <div class="message-list" id="message-list">
+                             <div class="message bot-message">
+                                 <div class="bot-avatar"><img src="https://img.icons8.com/plasticine/100/lotus.png" alt="Bot Avatar"></div>
+                                 <div class="message-content"><p>Xin chào! Tôi là trợ lý tri thức về Tư tưởng Hồ Chí Minh. Bạn muốn bắt đầu từ đâu?</p></div>
+                             </div>
+                        </div>
+                        <div class="message-input">
+                            <textarea id="message-input" placeholder="Hỏi về vai trò của Đảng Cộng sản..." rows="1"></textarea>
+                            <button id="send-btn" aria-label="Gửi tin nhắn"><i data-feather="send"></i></button>
+                        </div>
+                    </section>
+                </div>
+            </div>
+
+            <!-- ============== TRANG TRẮC NGHIỆM ============== -->
+            <div id="quiz-page" class="page">
+                <div class="page-header">
+                    <i data-feather="check-square"></i>
+                    <h1>Kiểm tra Trắc nghiệm</h1>
+                </div>
+                <div id="quiz-root"></div>
+            </div>
+
+            <!-- ============== TRANG SƠ ĐỒ TƯ DUY ============== -->
+            <div id="mindmap-page" class="page">
+                <div class="page-header">
+                    <i data-feather="git-branch"></i>
+                    <h1>Sơ đồ tư duy: Nguồn gốc Tư tưởng Hồ Chí Minh</h1>
+                </div>
+                <div class="mindmap-controls">
+                    <button id="zoom-in" class="zoom-btn" title="Phóng to">
+                        <i data-feather="zoom-in"></i>
+                    </button>
+                    <button id="zoom-out" class="zoom-btn" title="Thu nhỏ">
+                        <i data-feather="zoom-out"></i>
+                    </button>
+                    <button id="reset-zoom" class="zoom-btn" title="Đặt lại">
+                        <i data-feather="rotate-ccw"></i>
+                    </button>
+                    <span id="zoom-level" class="zoom-level">100%</span>
+                </div>
+                <div class="image-container" id="mindmap-container">
+                    <img id="mindmap-image" src="image/mindmap.png" alt="Sơ đồ tư duy Nguồn gốc Tư tưởng Hồ Chí Minh">
+                </div>
+            </div>
+
+
+        </main>
+    </div>
+
+    <div class="sidebar-overlay"></div>
+
+    <script src="script.js"></script>
+    <script src="quiz.js" defer></script>
+</body>
+</html>

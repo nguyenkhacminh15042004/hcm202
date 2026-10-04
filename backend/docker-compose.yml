@@ -1,0 +1,138 @@
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: hcm202-postgres
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-hcm202_db}
+      POSTGRES_USER: ${POSTGRES_USER:-hcm202_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-hcm202_passwd}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./scripts/initdb:/docker-entrypoint-initdb.d
+    ports:
+      - "127.0.0.1:5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-hcm202_user} -d ${POSTGRES_DB:-hcm202_db}"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - hcm202-network
+
+  # Backend Node.js Application
+  backend:
+    build: .
+    container_name: hcm202-backend
+    environment:
+      - NODE_ENV=production
+      - DB_HOST=${DB_HOST:-postgres}
+      - DB_PORT=${DB_PORT:-5432}
+      - DB_NAME=${DB_NAME:-hcm202_db}
+      - DB_USER=${DB_USER:-hcm202_user}
+      - DB_PASSWORD=${DB_PASSWORD:-hcm202_passwd}
+      - DB_SSL=${DB_SSL:-false}
+    env_file:
+      - .env
+    ports:
+      - "3001:3001"
+    volumes:
+      - ./uploads:/app/uploads
+      - ./public:/app/public
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:3001/api/v1/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+    networks:
+      - hcm202-network
+
+  # Frontend Nginx Application
+  frontend:
+    build: ../fe
+    container_name: hcm202-frontend
+    ports:
+      - "80:80"
+      - "3000:80"
+    depends_on:
+      - backend
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost/ || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+    networks:
+      - hcm202-network
+
+  # Redis for caching (optional)
+  redis:
+    image: redis:7-alpine
+    container_name: hcm202-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+    networks:
+      - hcm202-network
+
+  # Python RAG Processing Service
+  python-rag:
+    build: ./python_rag
+    container_name: hcm202-python-rag
+    environment:
+      # Database configuration (same as backend)
+      - DB_HOST=${DB_HOST:-postgres}
+      - DB_PORT=${DB_PORT:-5432}
+      - DB_NAME=${DB_NAME:-hcm202_db}
+      - DB_USER=${DB_USER:-hcm202_user}
+      - DB_PASSWORD=${DB_PASSWORD:-hcm202_passwd}
+      - DB_SSL=${DB_SSL:-false}
+      
+      # OpenAI configuration (from your .env)
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      - OPENAI_BASE_URL=${OPENAI_BASE_URL:-https://api.openai.com/v1}
+      - OPENAI_EMBEDDING_MODEL=${OPENAI_EMBEDDING_MODEL:-text-embedding-ada-002}
+      - OPENAI_MODEL=${OPENAI_MODEL:-gpt-4}
+      
+      # RAG configuration
+      - CHUNK_SIZE=${CHUNK_SIZE:-1000}
+      - CHUNK_OVERLAP=${CHUNK_OVERLAP:-200}
+      - TOP_K_RESULTS=${TOP_K_RESULTS:-5}
+      - SIMILARITY_THRESHOLD=${SIMILARITY_THRESHOLD:-0.7}
+    
+    volumes:
+      # Mount uploads directory to access PDF files
+      - ./uploads:/app/uploads:ro
+      # Mount python_rag directory for development
+      - ./python_rag:/app:rw
+    
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - hcm202-network
+    # Don't start automatically, run on demand
+    profiles:
+      - tools
+    command: ["python", "rag_processor.py", "/app/uploads/ontap.pdf"]
+
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+
+networks:
+  hcm202-network:
+    driver: bridge
